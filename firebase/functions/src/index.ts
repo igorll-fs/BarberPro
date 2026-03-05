@@ -870,3 +870,121 @@ export const createAppointmentClient = functions.https.onCall(async (data: any, 
   });
   return { id: apptRef.id };
 });
+
+// ═══════════════════════════════════════════════
+// NOVAS FUNCIONALIDADES SOCIAIS
+// ═══════════════════════════════════════════════
+
+/**
+ * Tradução automática de mensagens do chat global
+ * Usa Google Cloud Translation API
+ */
+export const translateChatMessage = functions.firestore
+  .document("globalChat/{roomId}/messages/{messageId}")
+  .onCreate(async (snap, context) => {
+    const message = snap.data() as any;
+    const { roomId, messageId } = context.params;
+    
+    // Idiomas suportados para tradução
+    const supportedLanguages = ['pt', 'en', 'es', 'fr', 'de', 'it'];
+    const originalLang = message.language || 'pt';
+    
+    // Se não tem texto ou não é uma mensagem de chat global, ignora
+    if (!message.text || !message.roomId) return;
+    
+    const translations: Record<string, string> = {};
+    
+    // Traduzir para todos os idiomas suportados (exceto o original)
+    for (const targetLang of supportedLanguages) {
+      if (targetLang === originalLang) continue;
+      
+      try {
+        // Aqui você integraria com a API de tradução do Google
+        // Por enquanto, vamos criar um placeholder
+        // Em produção, use: https://translation.googleapis.com/language/translate/v2
+        
+        // Simulação de tradução (remover em produção)
+        translations[targetLang] = `[${targetLang.toUpperCase()}] ${message.text}`;
+      } catch (error) {
+        console.error(`Erro ao traduzir para ${targetLang}:`, error);
+      }
+    }
+    
+    // Atualizar mensagem com traduções
+    if (Object.keys(translations).length > 0) {
+      await snap.ref.update({ translations });
+    }
+  });
+
+/**
+ * Notificar novo seguidor
+ */
+export const notifyNewFollower = functions.firestore
+  .document("social/follows/relationships/{relationshipId}")
+  .onCreate(async (snap, context) => {
+    const follow = snap.data() as any;
+    
+    // Notificar o barbeiro que ganhou um seguidor
+    await notifyUser(
+      follow.followingUid,
+      "🎉 Novo seguidor!",
+      `${follow.followerName} começou a seguir você.`
+    );
+    
+    // Atualizar contador de seguidores
+    await db.collection("barbershops").doc(follow.followingShopId).collection("staff").doc(follow.followingUid).update({
+      followers: admin.firestore.FieldValue.increment(1),
+    });
+  });
+
+/**
+ * Notificar nova postagem no feed
+ */
+export const notifyNewPost = functions.firestore
+  .document("globalFeed/posts/all/{postId}")
+  .onCreate(async (snap, context) => {
+    const post = snap.data() as any;
+    
+    // Buscar seguidores do autor
+    const followersSnap = await db
+      .collection("social/follows/relationships")
+      .where("followingUid", "==", post.authorUid)
+      .get();
+    
+    // Notificar cada seguidor
+    const notifications = followersSnap.docs.map(async (doc) => {
+      const follower = doc.data();
+      await notifyUser(
+        follower.followerUid,
+        "📸 Nova publicação",
+        `${post.authorName} publicou uma nova foto`
+      );
+    });
+    
+    await Promise.all(notifications);
+  });
+
+/**
+ * Criar salas de chat globais na inicialização
+ */
+export const initializeGlobalChatRooms = functions.https.onCall(async (data, context) => {
+  // Verificar se é admin (implementar lógica de admin se necessário)
+  const rooms = [
+    { id: 'worldwide', type: 'worldwide', name: '🌍 Chat Mundial', description: 'Converse com barbeiros de todo o mundo', memberCount: 0 },
+    { id: 'country_BR', type: 'country', country: 'BR', name: '🇧🇷 Brasil', description: 'Chat dos barbeiros brasileiros', memberCount: 0 },
+    { id: 'country_PT', type: 'country', country: 'PT', name: '🇵🇹 Portugal', description: 'Chat dos barbeiros portugueses', memberCount: 0 },
+    { id: 'country_US', type: 'country', country: 'US', name: '🇺🇸 USA', description: 'Chat dos barbeiros americanos', memberCount: 0 },
+    { id: 'country_ES', type: 'country', country: 'ES', name: '🇪🇸 Espanha', description: 'Chat dos barbeiros espanhóis', memberCount: 0 },
+    { id: 'country_AR', type: 'country', country: 'AR', name: '🇦🇷 Argentina', description: 'Chat dos barbeiros argentinos', memberCount: 0 },
+    { id: 'country_MX', type: 'country', country: 'MX', name: '🇲🇽 México', description: 'Chat dos barbeiros mexicanos', memberCount: 0 },
+  ];
+  
+  for (const room of rooms) {
+    await db.collection("globalChat").doc("rooms").collection("all").doc(room.id).set({
+      ...room,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  }
+  
+  return { ok: true, message: `${rooms.length} salas criadas` };
+});

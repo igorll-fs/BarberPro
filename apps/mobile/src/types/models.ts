@@ -215,3 +215,188 @@ export interface DailyReport {
   newCustomers: number;
   topServices: { serviceId: string; name: string; count: number; revenue: number }[];
 }
+
+// ═════════════════════════════════════════════════════════
+// NOVAS FUNCIONALIDADES SOCIAIS
+// ═════════════════════════════════════════════════════════
+
+// ─── Chat Global ────────────────────────────────────────
+export type ChatRoomType = 'country' | 'worldwide';
+
+export interface GlobalChatRoom {
+  id: string;
+  type: ChatRoomType;
+  country?: string; // ex: "BR", "PT", "US" (null para worldwide)
+  name: string;
+  description?: string;
+  photoUrl?: string;
+  memberCount: number;
+  lastMessage?: string;
+  lastMessageAt?: any;
+  createdAt: any;
+}
+
+export interface GlobalChatMessage {
+  id: string;
+  roomId: string;
+  fromUid: string;
+  fromName?: string;
+  fromPhoto?: string;
+  fromCountry?: string;
+  fromRole: 'dono' | 'funcionario';
+  text: string;
+  textOriginal?: string; // Texto original antes da tradução
+  language?: string; // Idioma da mensagem original
+  mediaUrl?: string;
+  translations?: Record<string, string>; // { 'pt': '...', 'en': '...' }
+  createdAt: any;
+}
+
+// ─── Feed Global (Instagram-like) ───────────────────────
+export type PostType = 'photo' | 'video' | 'gallery';
+
+export interface GlobalFeedPost {
+  id: string;
+  type: PostType;
+  mediaUrls: string[]; // URLs das fotos/vídeos
+  thumbnailUrl?: string; // Para vídeos
+  caption?: string;
+  hashtags?: string[];
+  authorUid: string;
+  authorName: string;
+  authorPhoto?: string;
+  authorShopId: string;
+  authorShopName: string;
+  authorRole: 'dono' | 'funcionario';
+  likes: number;
+  comments: number;
+  shares: number;
+  saves: number;
+  likedBy?: string[]; // UIDs que curtiram
+  taggedStaff?: string[]; // UIDs de barbeiros tagueados
+  location?: string;
+  createdAt: any;
+}
+
+export interface FeedComment {
+  id: string;
+  postId: string;
+  fromUid: string;
+  fromName: string;
+  fromPhoto?: string;
+  fromRole: 'dono' | 'funcionario' | 'cliente';
+  text: string;
+  likes: number;
+  likedBy?: string[];
+  createdAt: any;
+}
+
+// ─── Sistema de Seguir ─────────────────────────────────
+export interface FollowRelationship {
+  followerUid: string; // Quem segue
+  followerName: string;
+  followerPhoto?: string;
+  followingUid: string; // Quem está sendo seguido (barbeiro)
+  followingName: string;
+  followingPhoto?: string;
+  followingShopId: string;
+  followingShopName: string;
+  createdAt: any;
+}
+
+export interface UserFollowStats {
+  uid: string;
+  followersCount: number;
+  followingCount: number;
+  postsCount: number;
+}
+
+// ─── Galeria do Cliente ─────────────────────────────────
+export interface SavedPost {
+  id: string;
+  userUid: string;
+  postId: string;
+  postData: GlobalFeedPost;
+  savedAt: any;
+  collection?: string; // Pasta/coleção (ex: "Cortes Favoritos", "Ideias")
+}
+
+export interface UserGallery {
+  customerUid: string;
+  posts: SavedPost[];
+  appointments: {
+    appointmentId: string;
+    serviceName: string;
+    barberName: string;
+    shopName: string;
+    date: string;
+    photoUrl?: string;
+    rating?: number;
+    review?: string;
+  }[];
+}
+
+// ─── Avaliação de Corte (Específica) ──────────────────────
+export interface HaircutReview {
+  id: string;
+  appointmentId: string;
+  customerUid: string;
+  customerName?: string;
+  customerPhoto?: string;
+  shopId: string;
+  shopName: string;
+  staffUid: string;
+  staffName: string;
+  staffPhoto?: string;
+  // Avaliações separadas
+  haircutRating: number; // 1-5 - Avaliação do corte em si
+  serviceRating: number; // 1-5 - Avaliação do atendimento
+  barbershopRating: number; // 1-5 - Avaliação da barbearia
+  // Fotos do resultado
+  resultPhotos?: string[]; // Fotos do corte final
+  beforePhoto?: string; // Foto antes (opcional)
+  // Comentários
+  haircutComment?: string; // Sobre o corte
+  serviceComment?: string; // Sobre o atendimento
+  // Tags
+  tags?: string[]; // ex: ["fade", "degradê", "barba", "moderno"]
+  // Curtidas e comentários
+  likes: number;
+  likedBy?: string[];
+  comments: FeedComment[];
+  // Compartilhamento
+  shared: boolean;
+  sharedAt?: any;
+  // Resposta do barbeiro
+  barberReply?: string;
+  barberRepliedAt?: any;
+  createdAt: any;
+}
+
+// ─── Perfil Público do Barbeiro ─────────────────────────
+export interface BarberPublicProfile {
+  uid: string;
+  name: string;
+  photoUrl?: string;
+  bio?: string;
+  specialty?: string[]; // Especialidades
+  shopId: string;
+  shopName: string;
+  shopAddress?: string;
+  shopPhoto?: string;
+  // Estatísticas
+  followers: number;
+  following: number;
+  postsCount: number;
+  totalCuts: number;
+  avgRating: number;
+  // Redes sociais
+  instagram?: string;
+  tiktok?: string;
+  // Portfólio
+  portfolioPhotos?: string[];
+  // Disponibilidade para seguir
+  allowFollow: boolean;
+  // Criado em
+  joinedAt: any;
+}
