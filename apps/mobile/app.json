@@ -30,13 +30,13 @@
       "eas": {
         "projectId": "00000000-0000-0000-0000-000000000000"
       },
-      "FIREBASE_API_KEY": "",
-      "FIREBASE_AUTH_DOMAIN": "",
-      "FIREBASE_PROJECT_ID": "",
-      "FIREBASE_STORAGE_BUCKET": "",
-      "FIREBASE_MESSAGING_SENDER_ID": "",
-      "FIREBASE_APP_ID": "",
-      "FIREBASE_MEASUREMENT_ID": "",
+      "FIREBASE_API_KEY": "AIzaSyDoQH-6kjBi3FDs9M50JJdmr9uCLfK9lVY",
+      "FIREBASE_AUTH_DOMAIN": "baberpro-31c40.firebaseapp.com",
+      "FIREBASE_PROJECT_ID": "baberpro-31c40",
+      "FIREBASE_STORAGE_BUCKET": "baberpro-31c40.firebasestorage.app",
+      "FIREBASE_MESSAGING_SENDER_ID": "559665774528",
+      "FIREBASE_APP_ID": "1:559665774528:web:c8250dd76513d68b539225",
+      "FIREBASE_MEASUREMENT_ID": "G-LWBJ377XGP",
       "STRIPE_PUBLISHABLE_KEY": "",
       "GOOGLE_MAPS_API_KEY": ""
     }
