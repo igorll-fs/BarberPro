@@ -33,18 +33,18 @@ jest.mock('firebase/firestore', () => ({
   orderBy: jest.fn(),
 }));
 
-jest.mock('@/services/auth', () => ({
+jest.mock('./src/services/auth', () => ({
   startOtpWhatsApp: jest.fn().mockResolvedValue({}),
   verifyOtpWhatsApp: jest.fn().mockResolvedValue({}),
   signInOwnerEmail: jest.fn().mockResolvedValue({}),
   signInWithGoogle: jest.fn().mockResolvedValue({}),
 }));
 
-jest.mock('@/services/claims', () => ({
+jest.mock('./src/services/claims', () => ({
   getClaims: jest.fn().mockResolvedValue({ role: 'cliente' }),
 }));
 
-jest.mock('@/services/firebase', () => ({
+jest.mock('./src/services/firebase', () => ({
   auth: {},
   functions: {},
   db: {},

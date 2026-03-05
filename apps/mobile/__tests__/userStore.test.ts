@@ -2,36 +2,55 @@ import { useUser } from '../src/store/user';
 
 describe('User Store (Zustand)', () => {
   beforeEach(() => {
-    useUser.setState({ role: null, shopId: undefined });
+    useUser.setState({
+      uid: null,
+      role: null,
+      shopId: null,
+      isAuthenticated: false,
+      isDemo: false,
+    });
   });
 
   it('estado inicial é role null', () => {
     const state = useUser.getState();
     expect(state.role).toBeNull();
-    expect(state.shopId).toBeUndefined();
+    expect(state.shopId).toBeNull();
+    expect(state.isAuthenticated).toBe(false);
   });
 
-  it('setRole atualiza role corretamente', () => {
-    useUser.getState().setRole('dono');
+  it('setAuth atualiza role e shopId corretamente', () => {
+    useUser.getState().setAuth('uid123', 'dono', 'shop123');
     expect(useUser.getState().role).toBe('dono');
+    expect(useUser.getState().shopId).toBe('shop123');
+    expect(useUser.getState().isAuthenticated).toBe(true);
   });
 
-  it('setRole aceita todos os roles válidos', () => {
-    const roles = ['cliente', 'dono', 'funcionario', null] as const;
+  it('setAuth aceita todos os roles válidos', () => {
+    const roles = ['cliente', 'dono', 'funcionario'] as const;
     roles.forEach(role => {
-      useUser.getState().setRole(role);
+      useUser.getState().setAuth(`uid-${role}`, role, 'shop123');
       expect(useUser.getState().role).toBe(role);
     });
   });
 
-  it('setShop atualiza shopId', () => {
-    useUser.getState().setShop('shop123');
-    expect(useUser.getState().shopId).toBe('shop123');
+  it('setAuth aceita shopId null', () => {
+    useUser.getState().setAuth('uid123', 'cliente', null);
+    expect(useUser.getState().shopId).toBeNull();
+    expect(useUser.getState().role).toBe('cliente');
   });
 
-  it('setShop aceita undefined para limpar', () => {
-    useUser.getState().setShop('shop123');
-    useUser.getState().setShop(undefined);
-    expect(useUser.getState().shopId).toBeUndefined();
+  it('signOut limpa todos os dados', () => {
+    useUser.getState().setAuth('uid123', 'dono', 'shop123');
+    useUser.getState().signOut();
+    expect(useUser.getState().role).toBeNull();
+    expect(useUser.getState().shopId).toBeNull();
+    expect(useUser.getState().isAuthenticated).toBe(false);
+  });
+
+  it('setDemo configura modo demo corretamente', () => {
+    useUser.getState().setDemo('cliente');
+    expect(useUser.getState().isDemo).toBe(true);
+    expect(useUser.getState().role).toBe('cliente');
+    expect(useUser.getState().isAuthenticated).toBe(true);
   });
 });
