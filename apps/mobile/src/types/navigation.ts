@@ -54,6 +54,7 @@ export type RootStackParamList = {
   PromotionsManagement: undefined;
   InventoryManagement: undefined;
   StoriesManagement: undefined;
+  LanguageSettings: undefined;
   RateAppointment: { shopId: string; appointmentId: string; serviceName?: string; staffName?: string };
   ReviewsList: { shopId: string };
   ServiceDetail: { shopId: string; serviceId: string };

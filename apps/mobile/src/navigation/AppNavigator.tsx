@@ -41,6 +41,7 @@ import RateAppointmentScreen from '../screens/common/RateAppointmentScreen';
 import ReviewsListScreen from '../screens/common/ReviewsListScreen';
 import OwnerPaywallScreen from '../screens/owner/OwnerPaywallScreen';
 import OwnerOnboardingScreen from '../screens/owner/OwnerOnboardingScreen';
+import LanguageSettingsScreen from '../screens/common/LanguageSettingsScreen';
 
 // ─── Tab Screens ────────────────────────────────────────
 const tabBarStyle = {
@@ -142,6 +143,7 @@ export default function AppNavigator({ isAuthenticated, role }: { isAuthenticate
           <RStack.Screen name="OwnerPaywall" component={OwnerPaywallScreen} options={{ presentation: 'modal' }} />
           <RStack.Screen name="OwnerOnboarding" component={OwnerOnboardingScreen} />
           <RStack.Screen name="EditProfile" component={ProfileScreen} options={{ presentation: 'modal' }} />
+          <RStack.Screen name="LanguageSettings" component={LanguageSettingsScreen} options={{ presentation: 'modal' }} />
         </>
       ) : role === 'funcionario' ? (
         <>

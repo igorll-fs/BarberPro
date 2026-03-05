@@ -2,7 +2,10 @@
    BARBERPRO — App Root
    Auth persistente + Navegação por role
    ============================ */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { I18nextProvider } from 'react-i18next';
+import i18n from 'i18next';
+import initI18n from './i18n';
 import { View, Text, ScrollView, Button, StyleSheet } from 'react-native';
 import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -78,8 +81,19 @@ const linking = {
 
 // ─── Main App ───────────────────────────────────────────
 function AppContent() {
+  const [i18nReady, setI18nReady] = useState(false);
+
+  // Inicializar i18n
+  useEffect(() => {
+    initI18n().then(() => setI18nReady(true));
+  }, []);
+
   // Ouve onAuthStateChanged e sincroniza store
   useAuthListener();
+
+  if (!i18nReady) {
+    return <LoadingScreen message="Carregando..." />;
+  }
 
   const isReady = useUser((s) => s.isReady);
   const isAuthenticated = useUser((s) => s.isAuthenticated);
