@@ -104,6 +104,7 @@ function AppContent() {
         } />
 
         {/* App protegido */}
+        <Route path="/b/:slug/booking" element={<BookingPage />} />
         <Route path="/app" element={
           <ProtectedRoute><AppLayout /></ProtectedRoute>
         }>
