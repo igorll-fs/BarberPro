@@ -20,8 +20,24 @@ export default function OwnerPaywallScreen() {
   }, [shopId]);
 
   const plans = [
-    { mode: 'monthly' as const, title: 'Mensal', price: 'R$ 60', period: '/mês', features: ['Dashboard completo', 'Equipe ilimitada', 'Chat com clientes', 'Relatórios financeiros'] },
-    { mode: 'yearly' as const, title: 'Anual', price: 'R$ 700', period: '/ano', badge: 'Economize 3%', features: ['Tudo do mensal', 'Prioridade no suporte', 'Recursos beta antecipados'] },
+    { 
+      mode: 'monthly' as const, 
+      title: 'Mensal', 
+      price: 'R$ 99,99', 
+      period: '/mês', 
+      badge: 'Mais popular',
+      features: ['Dashboard completo', 'Equipe ilimitada', 'Chat com clientes', 'Relatórios financeiros', 'Notificações push', 'Suporte prioritário'] 
+    },
+    { 
+      mode: 'quarterly' as const, 
+      title: 'Trimestral', 
+      price: 'R$ 79,99', 
+      period: '/mês', 
+      badge: '🔥 Melhor oferta',
+      originalPrice: 'R$ 99,99',
+      description: 'Cobrado a cada 3 meses: R$ 239,97',
+      features: ['Tudo do mensal', '7 dias grátis para testar', 'Economia de R$ 60', 'Prioridade no suporte', 'Recursos exclusivos'] 
+    },
   ];
 
   return (
@@ -49,22 +65,32 @@ export default function OwnerPaywallScreen() {
 
         {/* Planos */}
         {plans.map((plan) => (
-          <AppCard key={plan.mode} style={{ marginBottom: spacing.lg, ...shadows.md, borderWidth: 1, borderColor: plan.mode === 'yearly' ? colors.primary : colors.borderLight }}>
+          <AppCard key={plan.mode} style={{ marginBottom: spacing.lg, ...shadows.md, borderWidth: 2, borderColor: plan.mode === 'quarterly' ? colors.primary : colors.borderLight }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md }}>
               <Text style={{ color: colors.text, fontSize: fontSize.xl, fontWeight: '700' }}>{plan.title}</Text>
-              {plan.badge && <Badge text={plan.badge} variant="success" size="sm" />}
+              {plan.badge && <Badge text={plan.badge} variant={plan.mode === 'quarterly' ? 'primary' : 'success'} size="sm" />}
             </View>
-            <View style={{ flexDirection: 'row', alignItems: 'baseline', marginBottom: spacing.md }}>
-              <Text style={{ color: colors.primary, fontSize: 32, fontWeight: '700' }}>{plan.price}</Text>
-              <Text style={{ color: colors.textSecondary, fontSize: fontSize.md }}>{plan.period}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'baseline', marginBottom: spacing.xs }}>
+              <Text style={{ color: colors.primary, fontSize: 36, fontWeight: '800' }}>{plan.price}</Text>
+              <Text style={{ color: colors.textSecondary, fontSize: fontSize.md, marginLeft: spacing.xs }}>{plan.period}</Text>
             </View>
+            {plan.originalPrice && (
+              <Text style={{ color: colors.textSecondary, fontSize: fontSize.sm, textDecorationLine: 'line-through', marginBottom: spacing.xs }}>
+                De {plan.originalPrice}/mês
+              </Text>
+            )}
+            {plan.description && (
+              <Text style={{ color: colors.success, fontSize: fontSize.sm, fontWeight: '600', marginBottom: spacing.md }}>
+                {plan.description}
+              </Text>
+            )}
             {plan.features.map((f) => (
               <Text key={f} style={{ color: colors.textSecondary, fontSize: fontSize.md, marginBottom: 4 }}>✓ {f}</Text>
             ))}
             <AppButton
-              title={`Assinar ${plan.title}`}
+              title={plan.mode === 'quarterly' ? 'Começar 7 dias grátis' : `Assinar ${plan.title}`}
               onPress={() => shopId && openCheckout(shopId, plan.mode)}
-              variant={plan.mode === 'yearly' ? 'primary' : 'outline'}
+              variant={plan.mode === 'quarterly' ? 'primary' : 'outline'}
               style={{ marginTop: spacing.lg }}
             />
           </AppCard>

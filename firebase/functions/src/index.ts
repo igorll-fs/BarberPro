@@ -110,11 +110,11 @@ export const createPixPayment = functions.https.onCall(async (data: any, context
 
 export const createCheckoutSession = functions.https.onCall(async (data: any, context: functions.https.CallableContext) => {
   const uid = context.auth?.uid;
-  const { shopId, mode } = data as { shopId: string; mode: "monthly"|"semiannual"|"yearly" };
+  const { shopId, mode } = data as { shopId: string; mode: "monthly"|"quarterly"|"yearly" };
   if (!uid || !shopId) throw new functions.https.HttpsError("invalid-argument", "shopId é obrigatório");
   const priceMap: Record<string, string | undefined> = {
     monthly: process.env.STRIPE_PRICE_MONTHLY,
-    semiannual: process.env.STRIPE_PRICE_SEMIANNUAL,
+    quarterly: process.env.STRIPE_PRICE_QUARTERLY,
     yearly: process.env.STRIPE_PRICE_YEARLY,
   };
   const priceId = priceMap[mode];

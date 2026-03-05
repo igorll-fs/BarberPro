@@ -32,7 +32,7 @@ export interface Barbershop {
   description?: string;
   subscription: {
     status: 'active' | 'inactive' | 'canceled' | 'trial';
-    plan?: 'monthly' | 'yearly';
+    plan?: 'monthly' | 'quarterly' | 'yearly';
     renewAt?: any;
     stripe?: { customer?: string };
   };
