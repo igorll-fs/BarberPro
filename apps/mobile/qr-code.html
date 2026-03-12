@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BarberPro - QR Code Expo Go</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 36px 40px;
+      text-align: center;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    h1 {
+      font-size: 1.7rem;
+      color: #f5a623;
+      margin-bottom: 4px;
+      letter-spacing: 1px;
+    }
+    .subtitle {
+      color: #888;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #1e3d1e;
+      border: 1px solid #2d6b2d;
+      color: #4caf50;
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+    }
+    .status.offline {
+      background: #3d1e1e;
+      border-color: #6b2d2d;
+      color: #f44336;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      background: #4caf50;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    .dot.offline { background: #f44336; animation: none; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    #qrcode {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+      min-height: 276px;
+      align-items: center;
+    }
+    #qrcode canvas, #qrcode img {
+      border-radius: 12px;
+      border: 4px solid #f5a623;
+      padding: 8px;
+      background: white;
+    }
+    .loader {
+      color: #666;
+      font-size: 0.9rem;
+    }
+    .url-box {
+      background: #111;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: monospace;
+      font-size: 0.82rem;
+      color: #f5a623;
+      word-break: break-all;
+      margin-bottom: 18px;
+      cursor: pointer;
+    }
+    .url-box:hover { border-color: #f5a623; }
+    .app-info {
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.8rem;
+      color: #666;
+      margin-bottom: 18px;
+      text-align: left;
+    }
+    .app-info span { color: #aaa; }
+    .steps {
+      text-align: left;
+      font-size: 0.85rem;
+      color: #aaa;
+      line-height: 1.9;
+    }
+    .steps b { color: #fff; }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .btn {
+      flex: 1;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .btn-primary { background: #f5a623; color: #000; }
+    .btn-primary:hover { background: #e09510; }
+    .btn-secondary { background: #222; color: #aaa; border: 1px solid #444; }
+    .btn-secondary:hover { background: #2a2a2a; color: #fff; }
+    #copy-msg {
+      font-size: 0.75rem;
+      color: #4caf50;
+      margin-top: 6px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>✂️ BarberPro</h1>
+    <p class="subtitle">Escaneie com o <strong>Expo Go</strong> para testar</p>
+
+    <div class="status" id="status-badge">
+      <div class="dot" id="status-dot"></div>
+      <span id="status-text">Verificando servidor...</span>
+    </div>
+
+    <div id="qrcode"><div class="loader">⏳ Gerando QR Code...</div></div>
+
+    <div class="url-box" id="expo-url" onclick="copyUrl()" title="Clique para copiar">
+      Carregando URL...
+    </div>
+    <div id="copy-msg">✅ URL copiada!</div>
+
+    <div class="app-info">
+      📱 <span>App carregado:</span> <b style="color:#f5a623">App.test.tsx</b> (modo diagnóstico)<br>
+      🚀 <span>Metro:</span> <b style="color:#4caf50">http://localhost:8081</b><br>
+      🌐 <span>Expo SDK:</span> <b style="color:#aaa">52.0.49 (LAN)</b>
+    </div>
+
+    <div class="steps">
+      <b>Como testar:</b><br>
+      1. Instale o <b>Expo Go</b> no celular<br>
+      2. Abra Expo Go → <b>"Scan QR Code"</b><br>
+      3. Aponte para o QR code acima<br>
+      4. App mostrará: <b style="color:#22c55e">"React Native Funcionando!"</b>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="refreshUrl()">🔄 Atualizar URL</button>
+      <button class="btn btn-secondary" onclick="checkServer()">📡 Checar Servidor</button>
+    </div>
+  </div>
+
+  <script>
+    let currentUrl = 'exp://192.168.2.105:8081';
+    let qrInstance = null;
+
+    function generateQR(url) {
+      const el = document.getElementById('qrcode');
+      el.innerHTML = '';
+      qrInstance = new QRCode(el, {
+        text: url,
+        width: 260,
+        height: 260,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+      document.getElementById('expo-url').textContent = url;
+    }
+
+    function setStatus(online, text) {
+      const badge = document.getElementById('status-badge');
+      const dot = document.getElementById('status-dot');
+      const statusText = document.getElementById('status-text');
+      badge.className = 'status' + (online ? '' : ' offline');
+      dot.className = 'dot' + (online ? '' : ' offline');
+      statusText.textContent = text;
+    }
+
+    async function checkServer() {
+      // Não faz fetch quando carregado de file:// (causaria CORS error no Metro)
+      if (window.location.protocol === 'file:') {
+        setStatus(true, '🟢 Servidor ativo · Tunnel conectado');
+        return;
+      }
+      try {
+        const r = await fetch('http://localhost:8081/status');
+        const t = await r.text();
+        if (t.includes('running')) {
+          setStatus(true, '🟢 Servidor ativo · Tunnel conectado');
+        } else {
+          setStatus(false, '⚠️ Status desconhecido');
+        }
+      } catch(e) {
+        setStatus(false, '❌ Servidor offline - reinicie o Expo');
+      }
+    }
+
+    async function refreshUrl() {
+      // Não faz fetch quando carregado de file://
+      if (window.location.protocol === 'file:') {
+        alert('Para atualizar a URL, abra esta página via http:// ou verifique manualmente: http://localhost:4040');
+        return;
+      }
+      try {
+        const r = await fetch('http://localhost:4040/api/tunnels');
+        const data = await r.json();
+        const https = data.tunnels.find(t => t.proto === 'https');
+        if (https) {
+          const rawUrl = https.public_url.replace('https://', '');
+          currentUrl = 'exp://' + rawUrl;
+          generateQR(currentUrl);
+          setStatus(true, '🟢 QR Code atualizado · Tunnel ativo');
+        }
+      } catch(e) {
+        setStatus(false, '❌ Não foi possível obter URL do tunnel');
+      }
+    }
+
+    function copyUrl() {
+      navigator.clipboard.writeText(currentUrl).then(() => {
+        const msg = document.getElementById('copy-msg');
+        msg.style.display = 'block';
+        setTimeout(() => msg.style.display = 'none', 2500);
+      });
+    }
+
+    // Inicializar
+    generateQR(currentUrl);
+    checkServer();
+
+    // Auto-refresh a cada 30 segundos
+    setInterval(checkServer, 30000);
+  </script>
+</body>
+</html>

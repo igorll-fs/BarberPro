@@ -10,10 +10,12 @@ import { Header, AppCard, AppButton } from '../../components';
 import { useUser } from '../../store/user';
 import { doSignOut } from '../../hooks/useAuth';
 import { openBillingPortal } from '../../services/subscriptions';
+import { useNavigation } from '@react-navigation/native';
 import { registerForPushNotificationsAsync, savePushToken } from '../../services/notifications';
 
 export default function SettingsScreen() {
-  const { role, shopId, uid, pushToken } = useUser();
+  const navigation = useNavigation();
+  const { role, shopId, uid, pushToken, isDevMode, enableDevMode, isAuthorizedDev } = useUser();
   const setPushToken = useUser((s) => s.setPushToken);
   const [notifEnabled, setNotifEnabled] = useState(!!pushToken);
   const [exporting, setExporting] = useState(false);
@@ -99,11 +101,64 @@ export default function SettingsScreen() {
           </AppCard>
         )}
 
+        {/* Gerenciamento de Versões (dono) */}
+        {role === 'dono' && (
+          <AppCard>
+            <Text style={{ color: colors.text, fontSize: fontSize.lg, fontWeight: '600' }}>🔄 Atualizações</Text>
+            <Text style={{ color: colors.textSecondary, fontSize: fontSize.sm, marginTop: spacing.xs }}>
+              Gerencie versões do app e publique atualizações
+            </Text>
+            <AppButton 
+              title="Gerenciar versões" 
+              variant="outline" 
+              size="sm" 
+              style={{ marginTop: spacing.md }}
+              onPress={() => navigation.navigate('VersionManager' as never)} 
+            />
+          </AppCard>
+        )}
+
+        {/* Modo Desenvolvedor - APENAS para UIDs na whitelist */}
+        {isAuthorizedDev && (
+          <AppCard style={{ borderColor: colors.primary, borderWidth: 2 }}>
+            <Text style={{ color: colors.primary, fontSize: fontSize.lg, fontWeight: '600' }}>
+              🛠️ Modo Desenvolvedor
+            </Text>
+            <Text style={{ color: colors.textSecondary, fontSize: fontSize.sm, marginTop: spacing.xs }}>
+              {isDevMode 
+                ? 'Modo dev ativo. Alterne entre perfis para testar.' 
+                : 'Acesso autorizado. Ative o modo dev para testar todas as funcionalidades.'}
+            </Text>
+            {!isDevMode && (
+              <Text style={{ color: colors.textMuted, fontSize: fontSize.xs, marginTop: spacing.xs }}>
+                UID: {uid?.slice(0, 8)}... ✓ Autorizado
+              </Text>
+            )}
+            <AppButton 
+              title={isDevMode ? "Painel de Controle" : "Ativar Modo Dev"}
+              variant="primary"
+              size="sm" 
+              style={{ marginTop: spacing.md }}
+              onPress={() => {
+                if (!isDevMode) {
+                  enableDevMode();
+                }
+                navigation.navigate('DevMode' as never);
+              }} 
+            />
+          </AppCard>
+        )}
+
         {/* Sobre */}
         <AppCard>
           <Text style={{ color: colors.text, fontSize: fontSize.lg, fontWeight: '600' }}>Sobre</Text>
           <Text style={{ color: colors.textMuted, fontSize: fontSize.sm, marginTop: spacing.xs }}>BarberPro v1.0.0</Text>
           <Text style={{ color: colors.textMuted, fontSize: fontSize.sm }}>© 2026 BarberPro</Text>
+          {isDevMode && (
+            <Text style={{ color: colors.primary, fontSize: fontSize.sm, marginTop: spacing.xs }}>
+              🛠️ Dev Mode Ativo
+            </Text>
+          )}
         </AppCard>
 
         {/* LGPD */}

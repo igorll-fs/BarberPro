@@ -83,23 +83,35 @@ const linking = {
 function AppContent() {
   const [i18nReady, setI18nReady] = useState(false);
 
-  // Inicializar i18n
-  useEffect(() => {
-    initI18n().then(() => setI18nReady(true));
-  }, []);
-
-  // Ouve onAuthStateChanged e sincroniza store
-  useAuthListener();
-
-  if (!i18nReady) {
-    return <LoadingScreen message="Carregando..." />;
-  }
-
+  // ⚠️ IMPORTANTE: Todos os hooks devem ser chamados antes de qualquer return condicional
+  // Hooks do Zustand - sempre chamados
   const isReady = useUser((s) => s.isReady);
   const isAuthenticated = useUser((s) => s.isAuthenticated);
   const role = useUser((s) => s.role);
   const uid = useUser((s) => s.uid);
   const setPushToken = useUser((s) => s.setPushToken);
+
+  // Inicializar i18n com timeout
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      console.log('⏰ i18n timeout, continuando...');
+      setI18nReady(true);
+    }, 3000);
+
+    initI18n()
+      .then(() => {
+        clearTimeout(timeout);
+        setI18nReady(true);
+      })
+      .catch((err) => {
+        console.warn('⚠️ Erro no i18n:', err);
+        clearTimeout(timeout);
+        setI18nReady(true);
+      });
+  }, []);
+
+  // Ouve onAuthStateChanged e sincroniza store
+  useAuthListener();
 
   // ─── Push Notifications ─────────────────────────────
   useEffect(() => {
@@ -137,7 +149,12 @@ function AppContent() {
         responseSub?.remove();
       } catch {}
     };
-  }, [isAuthenticated, uid]);
+  }, [isAuthenticated, uid, setPushToken]);
+
+  // Retornos condicionais DEPOIS de todos os hooks
+  if (!i18nReady) {
+    return <LoadingScreen message="Carregando..." />;
+  }
 
   if (!isReady) {
     return <LoadingScreen message="Iniciando BarberPro..." />;

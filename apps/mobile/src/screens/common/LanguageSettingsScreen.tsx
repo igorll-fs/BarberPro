@@ -71,7 +71,7 @@ export default function LanguageSettingsScreen() {
             <AppCard style={[
               styles.languageCard,
               currentLang === language.code && styles.selectedCard
-            ]]}>
+            ]}>
               <View style={styles.languageInfo}>
                 <Text style={styles.flag}>{language.flag}</Text>
                 <View style={styles.textContainer}>

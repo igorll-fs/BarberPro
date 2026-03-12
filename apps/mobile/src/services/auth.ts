@@ -1,5 +1,5 @@
 import { httpsCallable } from 'firebase/functions';
-import { signInWithCustomToken, signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithCustomToken, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { auth, functions } from './firebase';
 
 export async function startOtpWhatsApp(phone: string) {
@@ -24,6 +24,12 @@ export async function signInOwnerEmail(email: string, password: string) {
 export async function signInWithGoogle() {
   // Placeholder: usar expo-auth-session ou Firebase Google Sign-In
   throw new Error('Google Sign-In não configurado neste esqueleto');
+}
+
+// Reset de senha via email
+export async function resetPassword(email: string) {
+  if (!auth) throw new Error('Firebase não configurado');
+  return sendPasswordResetEmail(auth, email);
 }
 
 // Utility functions for validation

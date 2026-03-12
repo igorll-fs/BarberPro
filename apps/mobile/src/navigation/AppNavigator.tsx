@@ -42,6 +42,12 @@ import ReviewsListScreen from '../screens/common/ReviewsListScreen';
 import OwnerPaywallScreen from '../screens/owner/OwnerPaywallScreen';
 import OwnerOnboardingScreen from '../screens/owner/OwnerOnboardingScreen';
 import LanguageSettingsScreen from '../screens/common/LanguageSettingsScreen';
+import VersionManagerScreen from '../screens/owner/VersionManagerScreen';
+import BarbershopProfileScreen from '../screens/owner/BarbershopProfileScreen';
+import DevModeScreen from '../screens/common/DevModeScreen';
+import DevPanelScreen from '../screens/dev/DevPanelScreen';
+import SearchBarbershopsScreen from '../screens/client/SearchBarbershopsScreen';
+import SettingsNewScreen from '../screens/SettingsScreen';
 
 // ─── Tab Screens ────────────────────────────────────────
 const tabBarStyle = {
@@ -144,6 +150,11 @@ export default function AppNavigator({ isAuthenticated, role }: { isAuthenticate
           <RStack.Screen name="OwnerOnboarding" component={OwnerOnboardingScreen} />
           <RStack.Screen name="EditProfile" component={ProfileScreen} options={{ presentation: 'modal' }} />
           <RStack.Screen name="LanguageSettings" component={LanguageSettingsScreen} options={{ presentation: 'modal' }} />
+          <RStack.Screen name="VersionManager" component={VersionManagerScreen} options={{ presentation: 'modal' }} />
+          <RStack.Screen name="BarbershopProfile" component={BarbershopProfileScreen} options={{ presentation: 'modal' }} />
+          <RStack.Screen name="DevMode" component={DevModeScreen} options={{ presentation: 'modal' }} />
+          <RStack.Screen name="DevPanel" component={DevPanelScreen} options={{ presentation: 'modal' }} />
+          <RStack.Screen name="Settings" component={SettingsNewScreen} options={{ presentation: 'modal' }} />
         </>
       ) : role === 'funcionario' ? (
         <>
@@ -163,6 +174,8 @@ export default function AppNavigator({ isAuthenticated, role }: { isAuthenticate
           <RStack.Screen name="Chat" component={ChatScreen} options={{ presentation: 'modal' }} />
           <RStack.Screen name="Notifications" component={NotificationsScreen} options={{ presentation: 'modal' }} />
           <RStack.Screen name="EditProfile" component={ProfileScreen} options={{ presentation: 'modal' }} />
+          <RStack.Screen name="SearchBarbershops" component={SearchBarbershopsScreen} options={{ presentation: 'modal' }} />
+          <RStack.Screen name="Settings" component={SettingsNewScreen} options={{ presentation: 'modal' }} />
         </>
       )}
     </RStack.Navigator>

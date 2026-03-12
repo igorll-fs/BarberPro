@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BarberPro - QR Code Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #F5F5F5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .container {
+            background: #FFFFFF;
+            border-radius: 24px;
+            padding: 48px 32px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #0A0A0A;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #666666;
+            margin-bottom: 32px;
+        }
+
+        .qr-container {
+            background: #FFFFFF;
+            border: 1px solid #E0E0E0;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 250px;
+            min-width: 250px;
+        }
+
+        .qr-container img {
+            display: block;
+            max-width: 200px;
+            max-height: 200px;
+        }
+
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background: #F5F5F5;
+            border: 2px dashed #E0E0E0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: #666666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid #E0E0E0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: 'SF Mono', monospace;
+            background: #FFFFFF;
+            color: #0A0A0A;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #0A0A0A;
+        }
+
+        .url-box {
+            background: #0A0A0A;
+            color: #FFFFFF;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-family: 'SF Mono', monospace;
+            font-size: 14px;
+            word-break: break-all;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px 24px;
+            background: #0A0A0A;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #333333;
+        }
+
+        .btn-secondary {
+            background: #F5F5F5;
+            color: #0A0A0A;
+            margin-top: 12px;
+        }
+
+        .btn-secondary:hover {
+            background: #E0E0E0;
+        }
+
+        .instructions {
+            background: #F5F5F5;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            margin-top: 24px;
+            text-align: left;
+        }
+
+        .instructions h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0A0A0A;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .instructions ol {
+            padding-left: 20px;
+            color: #666666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #F5F5F5;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #666666;
+            margin-bottom: 16px;
+        }
+
+        .badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: #16A34A;
+            border-radius: 50%;
+        }
+
+        .expo-links {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+
+        .expo-links a {
+            padding: 8px 16px;
+            background: #FFFFFF;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666666;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .expo-links a:hover {
+            border-color: #0A0A0A;
+            color: #0A0A0A;
+        }
+
+        .footer {
+            margin-top: 32px;
+            font-size: 14px;
+            color: #999999;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 32px 24px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .qr-container {
+                min-width: 200px;
+                min-height: 200px;
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="badge">Expo Preview</div>
+        
+        <h1>BarberPro</h1>
+        <p class="subtitle">Aponte a câmera do seu celular</p>
+
+        <div class="input-group">
+            <label for="urlInput">URL do Expo (exp://...)</label>
+            <input
+                type="text"
+                id="urlInput"
+                placeholder="exp://192.168.2.104:8082"
+                value="exp://192.168.2.104:8082"
+            >
+        </div>
+
+        <div class="qr-container" id="qrcode">
+            <div class="qr-placeholder">Carregando...</div>
+        </div>
+
+        <div class="url-box" id="urlBox">
+            exp://192.168.2.104:8082
+        </div>
+
+        <button class="btn" onclick="openQRInNewTab()">
+            Abrir QR Code (Nova Aba)
+        </button>
+        
+        <button class="btn btn-secondary" onclick="copyURL()">
+            Copiar URL
+        </button>
+
+        <div class="instructions">
+            <h3>Como usar</h3>
+            <ol>
+                <li>Baixe o <strong>Expo Go</strong> na App Store ou Play Store</li>
+                <li>Abra o app e toque em <strong>"Scan QR Code"</strong></li>
+                <li>Aponte para o QR code acima</li>
+                <li>O BarberPro carregará automaticamente</li>
+            </ol>
+        </div>
+
+        <div class="expo-links">
+            <a href="https://apps.apple.com/app/expo-go/id982107779" target="_blank" rel="noopener">
+                App Store
+            </a>
+            <a href="https://play.google.com/store/apps/details?id=host.exp.exponent" target="_blank" rel="noopener">
+                Play Store
+            </a>
+        </div>
+
+        <p class="footer">
+            ou acesse <strong>barberpro.app</strong>
+        </p>
+    </div>
+
+    <script>
+        // Gerar QR Code usando API do Google Chart (mais confiável)
+        function generateQR() {
+            const url = document.getElementById('urlInput').value || 'https://barberpro.app';
+            const container = document.getElementById('qrcode');
+            
+            // Usar Google Chart API (mais estável)
+            const qrUrl = `https://chart.googleapis.com/chart?cht=qr&chs=250x250&chld=L|0&chl=${encodeURIComponent(url)}`;
+            
+            container.innerHTML = `<img src="${qrUrl}" alt="QR Code" width="200" height="200" onerror="this.onerror=null; this.src=''; showFallback();">`;
+            
+            // Atualizar URL exibida
+            document.getElementById('urlBox').textContent = url;
+        }
+
+        function showFallback() {
+            const container = document.getElementById('qrcode');
+            const url = document.getElementById('urlInput').value || 'https://barberpro.app';
+            container.innerHTML = `
+                <div style="padding: 20px; text-align: center;">
+                    <p style="color: #666; margin-bottom: 10px;">Não foi possível carregar o QR automaticamente</p>
+                    <a href="https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(url)}" 
+                       target="_blank" 
+                       style="color: #0A0A0A; text-decoration: underline;">
+                        Clique aqui para ver o QR Code
+                    </a>
+                </div>
+            `;
+        }
+
+        function openQRInNewTab() {
+            const url = document.getElementById('urlInput').value || 'https://barberpro.app';
+            const qrUrl = `https://chart.googleapis.com/chart?cht=qr&chs=400x400&chld=L|0&chl=${encodeURIComponent(url)}`;
+            window.open(qrUrl, '_blank');
+        }
+
+        function copyURL() {
+            const url = document.getElementById('urlInput').value;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('URL copiada: ' + url);
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('URL copiada: ' + url);
+            });
+        }
+
+        // Atualizar em tempo real
+        document.getElementById('urlInput').addEventListener('input', function(e) {
+            document.getElementById('urlBox').textContent = e.target.value || 'https://barberpro.app';
+        });
+
+        // Inicializar ao carregar
+        window.onload = function() {
+            generateQR();
+        };
+    </script>
+</body>
+</html>

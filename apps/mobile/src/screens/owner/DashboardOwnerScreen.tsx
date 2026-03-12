@@ -130,8 +130,9 @@ export default function DashboardOwnerScreen() {
         <Text style={{ color: colors.text, fontSize: fontSize.xl, fontWeight: '600', marginBottom: spacing.md }}>
           Ações rápidas
         </Text>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, marginBottom: spacing.xxl }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.xxl }}>
           {[
+            { icon: '🏪', label: 'Perfil', onPress: () => navigation.navigate('BarbershopProfile' as any) },
             { icon: '➕', label: 'Agendar', onPress: () => navigation.navigate('Booking', { shopId: shopId || 'demo' }) },
             { icon: '⏰', label: 'Horários', onPress: () => navigation.navigate('ScheduleManagement') },
             { icon: '📦', label: 'Estoque', onPress: () => navigation.navigate('InventoryManagement') },
@@ -144,12 +145,21 @@ export default function DashboardOwnerScreen() {
               key={action.label}
               onPress={action.onPress}
               style={{
-                flex: 1, backgroundColor: colors.card, borderRadius: radius.lg, padding: spacing.md,
-                alignItems: 'center', borderWidth: 1, borderColor: colors.borderLight,
+                width: '23%',
+                minWidth: 75,
+                height: 80,
+                backgroundColor: colors.card,
+                borderRadius: radius.md,
+                paddingVertical: spacing.sm,
+                paddingHorizontal: spacing.xs,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 1,
+                borderColor: colors.borderLight,
               }}
             >
-              <Text style={{ fontSize: 24, marginBottom: 4 }}>{action.icon}</Text>
-              <Text style={{ color: colors.text, fontSize: fontSize.xs, fontWeight: '500' }}>{action.label}</Text>
+              <Text style={{ fontSize: 24, lineHeight: 28 }}>{action.icon}</Text>
+              <Text style={{ color: colors.text, fontSize: 10, fontWeight: '500', textAlign: 'center', marginTop: 2 }} numberOfLines={1}>{action.label}</Text>
             </TouchableOpacity>
           ))}
         </View>

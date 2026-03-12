@@ -11,9 +11,13 @@ interface Props {
   onLeftPress?: () => void;
   onRightPress?: () => void;
   badgeCount?: number;
+  showBackButton?: boolean;
+  showBack?: boolean;
+  onBack?: () => void;
+  rightComponent?: React.ReactNode;
 }
 
-export default function Header({ title, subtitle, leftIcon, rightIcon, onLeftPress, onRightPress, badgeCount }: Props) {
+export default function Header({ title, subtitle, leftIcon, rightIcon, onLeftPress, onRightPress, badgeCount, showBackButton, showBack, onBack, rightComponent }: Props) {
   const insets = useSafeAreaInsets();
 
   return (

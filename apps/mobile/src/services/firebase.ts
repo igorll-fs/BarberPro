@@ -42,11 +42,15 @@ try {
   const appExists = getApps().length > 0;
   app = appExists ? getApps()[0] : initializeApp(config as any);
   
-  // Inicializar Auth com AsyncStorage para persistência
+  // Inicializar Auth com persistência AsyncStorage
   try {
-    auth = initializeAuth(app, {
-      persistence: getReactNativePersistence(AsyncStorage)
-    });
+    if (appExists) {
+      auth = getAuth(app);
+    } else {
+      auth = initializeAuth(app, {
+        persistence: getReactNativePersistence(AsyncStorage)
+      });
+    }
   } catch (e) {
     // Auth já foi inicializado, usar instância existente
     auth = getAuth(app);
@@ -75,4 +79,4 @@ try {
   console.log('ℹ️ App continuará em modo offline/demo');
 }
 
-export { auth, db, functions, rtdb, storage };
+export { app, auth, db, functions, rtdb, storage };

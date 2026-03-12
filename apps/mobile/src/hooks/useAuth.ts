@@ -2,7 +2,7 @@
    BARBERPRO — Hook de Autenticação
    Ouve onAuthStateChanged e sincroniza com store
    ============================ */
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
@@ -11,16 +11,36 @@ import { useUser } from '../store/user';
 import type { UserRole } from '../types/models';
 
 export function useAuthListener() {
-  const { setAuth, setProfile, setReady, signOut: clearStore } = useUser();
+  // Usar seletores individuais para evitar problemas de referência
+  const setAuth = useUser((s) => s.setAuth);
+  const setProfile = useUser((s) => s.setProfile);
+  const setReady = useUser((s) => s.setReady);
+  const clearStore = useUser((s) => s.signOut);
+  
+  // Ref para controlar se já inicializou
+  const initialized = useRef(false);
 
   useEffect(() => {
+    // Evitar dupla inicialização
+    if (initialized.current) return;
+    initialized.current = true;
+
     // Se Firebase auth não inicializou, marcar como ready sem auth
     if (!auth) {
+      console.log('⚠️ Firebase auth não disponível, modo demo');
       setReady();
       return;
     }
 
+    // Timeout de segurança para não travar o app
+    const timeout = setTimeout(() => {
+      console.log('⏰ Auth timeout, continuando sem autenticação');
+      setReady();
+    }, 5000);
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      clearTimeout(timeout);
+      
       if (firebaseUser) {
         try {
           // Buscar claims (role, shopId)
@@ -42,10 +62,10 @@ export function useAuthListener() {
               });
             } else {
               setProfile({
-                name: firebaseUser.displayName || null,
-                email: firebaseUser.email || null,
-                phone: firebaseUser.phoneNumber || null,
-                photoUrl: firebaseUser.photoURL || null,
+                name: firebaseUser.displayName || undefined,
+                email: firebaseUser.email || undefined,
+                phone: firebaseUser.phoneNumber || undefined,
+                photoUrl: firebaseUser.photoURL || undefined,
               });
             }
           }
@@ -60,8 +80,11 @@ export function useAuthListener() {
       setReady();
     });
 
-    return () => unsubscribe();
-  }, []);
+    return () => {
+      clearTimeout(timeout);
+      unsubscribe();
+    };
+  }, [setAuth, setProfile, setReady, clearStore]);
 }
 
 export async function doSignOut() {

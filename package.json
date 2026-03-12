@@ -5,6 +5,19 @@
   "scripts": {
     "mobile": "cd apps/mobile && npx expo start",
     "mobile:clear": "cd apps/mobile && npx expo start --clear",
-    "web": "cd apps/public-web && npm run dev"
+    "web": "cd apps/public-web && npm run dev",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
+  },
+  "dependencies": {
+    "@types/react": "~18.3.12",
+    "expo": "~52.0.46",
+    "expo-asset": "~11.0.5",
+    "react": "18.3.1",
+    "react-native": "0.76.9",
+    "typescript": "~5.3.3"
+  },
+  "devDependencies": {
+    "@expo/ngrok": "^4.1.0"
   }
 }

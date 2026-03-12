@@ -186,7 +186,7 @@ export default function HomeCustomerScreen() {
                       )}
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
                         <Text style={{ color: colors.textMuted, fontSize: fontSize.xs }}>
-                          ⏱️ {svc.durationMinutes}min
+                          ⏱️ {svc.durationMin}min
                         </Text>
                         <Text style={{ color: colors.textMuted, fontSize: fontSize.xs }}>
                           ⭐ 4.8
@@ -195,7 +195,7 @@ export default function HomeCustomerScreen() {
                     </View>
                     <View style={{ alignItems: 'flex-end' }}>
                       <Text style={{ color: colors.primary, fontSize: fontSize.xxl, fontWeight: fontWeight.bold }}>
-                        {svc.price?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        {(svc.priceCents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                       </Text>
                     </View>
                   </View>
@@ -205,39 +205,45 @@ export default function HomeCustomerScreen() {
           </View>
         )}
 
-        {/* Quick actions — Maior e mais espaçado */}
-        <View style={{ flexDirection: 'row', gap: spacing.lg, marginTop: spacing.xxxl }}>
+        {/* Quick actions — Compacto e responsivo */}
+        <View style={{ flexDirection: 'row', gap: spacing.md, marginTop: spacing.xxl }}>
           <TouchableOpacity
             onPress={() => navigation.navigate('Chat', { shopId: shopId || 'demo', roomId: 'general', title: 'Chat' })}
             style={{
-              flex: 1, 
-              backgroundColor: colors.cardElevated, 
-              borderRadius: radius.xl, 
-              padding: spacing.xl,
-              alignItems: 'center', 
-              borderWidth: 1, 
+              flex: 1,
+              height: 90,
+              backgroundColor: colors.cardElevated,
+              borderRadius: radius.lg,
+              paddingVertical: spacing.md,
+              paddingHorizontal: spacing.sm,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 1,
               borderColor: colors.cardBorder,
               ...shadows.sm,
             }}
           >
-            <Text style={{ fontSize: 40, marginBottom: spacing.md }}>💬</Text>
-            <Text style={{ color: colors.text, fontSize: fontSize.md, fontWeight: fontWeight.semibold }}>Chat</Text>
+            <Text style={{ fontSize: 28, lineHeight: 32 }}>💬</Text>
+            <Text style={{ color: colors.text, fontSize: fontSize.sm, fontWeight: fontWeight.semibold, marginTop: 4 }}>Chat</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => navigation.navigate('CustomerTabs', { screen: 'Loyalty' })}
             style={{
-              flex: 1, 
-              backgroundColor: colors.cardElevated, 
-              borderRadius: radius.xl, 
-              padding: spacing.xl,
-              alignItems: 'center', 
-              borderWidth: 1, 
+              flex: 1,
+              height: 90,
+              backgroundColor: colors.cardElevated,
+              borderRadius: radius.lg,
+              paddingVertical: spacing.md,
+              paddingHorizontal: spacing.sm,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 1,
               borderColor: colors.cardBorder,
               ...shadows.sm,
             }}
           >
-            <Text style={{ fontSize: 40, marginBottom: spacing.md }}>⭐</Text>
-            <Text style={{ color: colors.text, fontSize: fontSize.md, fontWeight: fontWeight.semibold }}>Fidelidade</Text>
+            <Text style={{ fontSize: 28, lineHeight: 32 }}>⭐</Text>
+            <Text style={{ color: colors.text, fontSize: fontSize.sm, fontWeight: fontWeight.semibold, marginTop: 4 }}>Fidelidade</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

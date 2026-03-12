@@ -13,6 +13,7 @@ import {
   Image,
   Alert,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import {
   doc,
   setDoc,
@@ -44,8 +45,10 @@ const RATING_EMOJIS = ['😠', '😞', '😐', '😊', '😍'];
 const RATING_LABELS = ['Péssimo', 'Ruim', 'Regular', 'Bom', 'Excelente'];
 
 export default function HaircutReviewScreen({ route }: HaircutReviewScreenProps) {
+  const navigation = useNavigation();
   const { uid, name, photoUrl } = useUser();
   const { appointmentId, staffUid, staffName, staffPhoto, shopId, shopName, serviceName } = route.params;
+  const customerPhoto = photoUrl ?? undefined;
 
   // Avaliações separadas
   const [haircutRating, setHaircutRating] = useState(0);
@@ -123,7 +126,7 @@ export default function HaircutReviewScreen({ route }: HaircutReviewScreenProps)
         appointmentId,
         customerUid: uid,
         customerName: name || 'Cliente',
-        customerPhoto: photoUrl,
+        customerPhoto,
         shopId,
         shopName,
         staffUid,

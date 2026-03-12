@@ -63,6 +63,12 @@ export const colors = {
   backdrop: 'rgba(0, 0, 0, 0.7)',
   white: '#FFFFFF',
   black: '#000000',
+  
+  // Aliases for compatibility
+  cardBg: '#1C2333',
+  bgLight: '#131825',
+  error: '#F43F5E',
+  errorBg: 'rgba(244, 63, 94, 0.15)',
 };
 
 // ─── Espaçamentos Generosos ─────────────────────────────
@@ -85,8 +91,10 @@ export const fontSize = {
   lg: 17,
   xl: 20,      // Aumentado
   xxl: 24,     // Aumentado
+  '2xl': 24,   // Alias for compatibility
   xxxl: 32,    // Aumentado
   display: 40, // Novo
+  title: 20,   // Alias for compatibility
 } as const;
 
 export const fontWeight = {

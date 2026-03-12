@@ -5,11 +5,21 @@ import { colors, fontSize } from '../theme';
 interface Props {
   name?: string;
   photoUrl?: string;
-  size?: number;
+  uri?: string;
+  size?: number | 'sm' | 'md' | 'lg';
   style?: any;
 }
 
-export default function Avatar({ name, photoUrl, size = 44, style }: Props) {
+const sizeMap: Record<string, number> = {
+  sm: 32,
+  md: 44,
+  lg: 56,
+};
+
+export default function Avatar({ name, photoUrl, uri, size = 44, style }: Props) {
+  const actualSize = typeof size === 'string' ? sizeMap[size] || 44 : size;
+  const photoSource = photoUrl || uri;
+  
   const initials = (name || '?')
     .split(' ')
     .map((w) => w[0])
@@ -17,16 +27,16 @@ export default function Avatar({ name, photoUrl, size = 44, style }: Props) {
     .toUpperCase()
     .slice(0, 2);
 
-  if (photoUrl) {
+  if (photoSource) {
     const { Image } = require('react-native');
     return (
       <Image
-        source={{ uri: photoUrl }}
+        source={{ uri: photoSource }}
         style={[
           {
-            width: size,
-            height: size,
-            borderRadius: size / 2,
+            width: actualSize,
+            height: actualSize,
+            borderRadius: actualSize / 2,
             borderWidth: 2,
             borderColor: colors.primary,
           },
@@ -40,9 +50,9 @@ export default function Avatar({ name, photoUrl, size = 44, style }: Props) {
     <View
       style={[
         {
-          width: size,
-          height: size,
-          borderRadius: size / 2,
+          width: actualSize,
+          height: actualSize,
+          borderRadius: actualSize / 2,
           backgroundColor: colors.primaryBg,
           alignItems: 'center',
           justifyContent: 'center',
@@ -52,7 +62,7 @@ export default function Avatar({ name, photoUrl, size = 44, style }: Props) {
         style,
       ]}
     >
-      <Text style={{ color: colors.primary, fontSize: size * 0.38, fontWeight: '700' }}>
+      <Text style={{ color: colors.primary, fontSize: actualSize * 0.38, fontWeight: '700' }}>
         {initials}
       </Text>
     </View>

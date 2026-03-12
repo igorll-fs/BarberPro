@@ -6,6 +6,8 @@ interface Props {
   text: string;
   variant?: 'primary' | 'danger' | 'warning' | 'info' | 'success';
   size?: 'sm' | 'md';
+  style?: any;
+  color?: string;
 }
 
 const bgMap = { primary: colors.primaryBg, danger: colors.dangerBg, warning: colors.warningBg, info: colors.infoBg, success: colors.successBg };

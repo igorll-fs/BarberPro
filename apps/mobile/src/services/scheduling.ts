@@ -2,7 +2,7 @@
    BARBERPRO — Serviço de Agendamento
    CRUD + cancelar + remarcar
    ============================ */
-import { collection, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, serverTimestamp, query, where } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from './firebase';
 

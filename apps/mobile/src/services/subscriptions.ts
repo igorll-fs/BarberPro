@@ -11,7 +11,7 @@ export async function getSubscriptionStatus(shopId: string) {
   return data?.subscription?.status || 'inactive';
 }
 
-export async function openCheckout(shopId: string, mode: 'monthly'|'yearly') {
+export async function openCheckout(shopId: string, mode: 'monthly'|'yearly'|'semiannual') {
   const fn = httpsCallable(functions, 'createCheckoutSession');
   const res: any = await fn({ shopId, mode });
   if (res.data?.url) await WebBrowser.openBrowserAsync(res.data.url);

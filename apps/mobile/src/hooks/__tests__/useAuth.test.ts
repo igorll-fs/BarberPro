@@ -23,17 +23,10 @@ describe('useUser Store', () => {
     const { result } = renderHook(() => useUser());
     
     act(() => {
-      result.current.setUser({
-        uid: '123',
-        name: 'Test User',
-        email: 'test@example.com',
-        role: 'cliente',
-        shopId: 'shop-123',
-      });
+      result.current.setUser('123', 'cliente', 'shop-123');
     });
     
     expect(result.current.uid).toBe('123');
-    expect(result.current.name).toBe('Test User');
     expect(result.current.role).toBe('cliente');
     expect(result.current.isAuthenticated).toBe(true);
   });
@@ -42,12 +35,7 @@ describe('useUser Store', () => {
     const { result } = renderHook(() => useUser());
     
     act(() => {
-      result.current.setUser({
-        uid: '123',
-        name: 'Test User',
-        email: 'test@example.com',
-        role: 'cliente',
-      });
+      result.current.setUser('123', 'cliente');
     });
     
     act(() => {

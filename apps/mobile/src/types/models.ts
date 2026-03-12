@@ -3,7 +3,7 @@
    ============================ */
 
 // ─── Usuário ────────────────────────────────────────────
-export type UserRole = 'cliente' | 'dono' | 'funcionario';
+export type UserRole = 'cliente' | 'dono' | 'funcionario' | 'dev';
 
 export interface UserProfile {
   uid: string;

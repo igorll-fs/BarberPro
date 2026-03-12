@@ -26,8 +26,8 @@ const resources = {
 const LANGUAGE_KEY = '@barberpro_language';
 
 // Detectar idioma do dispositivo
-const detectLanguage = () => {
-  const locale = Localization.locale;
+const detectLanguage = (): string => {
+  const locale = Localization.getLocales()[0]?.languageTag || 'pt-BR';
   
   // Verificar se temos tradução para o locale exato
   if (resources[locale as keyof typeof resources]) {
@@ -46,28 +46,43 @@ const detectLanguage = () => {
 
 // Inicializar i18n
 const initI18n = async () => {
-  let savedLanguage = await AsyncStorage.getItem(LANGUAGE_KEY);
-  
-  // Se não tem idioma salvo, detecta do dispositivo
-  if (!savedLanguage) {
-    savedLanguage = detectLanguage();
-  }
+  try {
+    // Timeout para não travar o app
+    const savedLanguagePromise = AsyncStorage.getItem(LANGUAGE_KEY);
+    const savedLanguage = await Promise.race([
+      savedLanguagePromise,
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000))
+    ]);
+    
+    // Se não tem idioma salvo, detecta do dispositivo
+    const language = savedLanguage || detectLanguage();
 
-  i18n
-    .use(initReactI18next)
-    .init({
+    await i18n
+      .use(initReactI18next)
+      .init({
+        resources,
+        lng: language,
+        fallbackLng: 'pt-BR',
+        interpolation: {
+          escapeValue: false,
+        },
+        react: {
+          useSuspense: false,
+        },
+      });
+
+    return i18n;
+  } catch (error) {
+    console.warn('⚠️ Erro ao inicializar i18n, usando padrão:', error);
+    // Inicializa com configuração mínima em caso de erro
+    i18n.init({
+      lng: 'pt-BR',
       resources,
-      lng: savedLanguage,
-      fallbackLng: 'pt-BR',
-      interpolation: {
-        escapeValue: false,
-      },
-      react: {
-        useSuspense: false,
-      },
+      interpolation: { escapeValue: false },
+      react: { useSuspense: false },
     });
-
-  return i18n;
+    return i18n;
+  }
 };
 
 // Função para mudar idioma

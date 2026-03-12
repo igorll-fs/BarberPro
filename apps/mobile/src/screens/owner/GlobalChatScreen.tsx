@@ -128,7 +128,7 @@ export default function GlobalChatScreen() {
         roomId,
         fromUid: uid,
         fromName: name || 'Usuário',
-        fromPhoto: photoUrl,
+        fromPhoto: photoUrl ?? undefined,
         fromCountry: userCountry,
         fromRole: role as 'dono' | 'funcionario',
         text: inputText.trim(),

@@ -201,16 +201,73 @@ export const inviteStaff = functions.https.onCall(async (data: any, context: fun
 export const blockCustomer = functions.https.onCall(async (data: any, context: functions.https.CallableContext) => {
   const uid = context.auth?.uid;
   const claims: any = context.auth?.token || {};
-  const { customerUid, reason } = data as any;
+  const { customerUid, reason, durationDays } = data as { customerUid: string; reason: string; durationDays?: number };
   if (!uid || !["dono","funcionario"].includes(claims.role)) throw new functions.https.HttpsError("permission-denied", "Sem permissão");
   if (!customerUid) throw new functions.https.HttpsError("invalid-argument", "customerUid é obrigatório");
+  if (!reason || !reason.trim()) throw new functions.https.HttpsError("invalid-argument", "Motivo é obrigatório");
+  
   // SEGURANÇA: Validar que o staff pertence à mesma barbearia
   const shopId = claims.shopId;
   if (!shopId) throw new functions.https.HttpsError("failed-precondition", "Nenhuma barbearia associada");
+  
   // Verificar se o cliente tem agendamentos nesta barbearia (autorização por contexto)
   const appts = await db.collection("barbershops").doc(shopId).collection("appointments").where("customerUid", "==", customerUid).limit(1).get();
   if (appts.empty) throw new functions.https.HttpsError("permission-denied", "Cliente não pertence a esta barbearia");
-  await db.collection("users").doc(customerUid).set({ blocked: true, blockedReason: reason || "bloqueado", blockedBy: uid, blockedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+  
+  // Calcular data de expiração do bloqueio
+  let blockedUntil: admin.firestore.Timestamp | null = null;
+  if (durationDays && durationDays > 0) {
+    const until = new Date();
+    until.setDate(until.getDate() + durationDays);
+    blockedUntil = admin.firestore.Timestamp.fromDate(until);
+  }
+  
+  // Buscar nome do barbeiro/dono para o registro
+  const staffDoc = await db.collection("users").doc(uid).get();
+  const staffName = staffDoc.exists ? (staffDoc.data() as any).name || uid : uid;
+  
+  await db.collection("users").doc(customerUid).set({ 
+    blocked: true, 
+    blockedReason: reason.trim(), 
+    blockedBy: uid,
+    blockedByName: staffName,
+    blockedByShopId: shopId,
+    blockedAt: admin.firestore.FieldValue.serverTimestamp(),
+    blockedUntil: blockedUntil,
+    noShowCount: 0, // Resetar contador de faltas
+  }, { merge: true });
+  
+  // Notificar o cliente sobre o bloqueio
+  await notifyUser(customerUid, "🚫 Cliente bloqueado", `Você foi bloqueado. Motivo: ${reason.trim()}${blockedUntil ? ` Até: ${new Date(blockedUntil.toDate()).toLocaleDateString('pt-BR')}` : ' Permanentemente'}`);
+  
+  return { ok: true, blockedUntil: blockedUntil ? blockedUntil.toDate().toISOString() : null };
+});
+
+export const unblockCustomer = functions.https.onCall(async (data: any, context: functions.https.CallableContext) => {
+  const uid = context.auth?.uid;
+  const claims: any = context.auth?.token || {};
+  const { customerUid } = data as { customerUid: string };
+  
+  if (!uid || !["dono","funcionario"].includes(claims.role)) throw new functions.https.HttpsError("permission-denied", "Sem permissão");
+  if (!customerUid) throw new functions.https.HttpsError("invalid-argument", "customerUid é obrigatório");
+  
+  const shopId = claims.shopId;
+  if (!shopId) throw new functions.https.HttpsError("failed-precondition", "Nenhuma barbearia associada");
+  
+  // Buscar nome do staff
+  const staffDoc = await db.collection("users").doc(uid).get();
+  const staffName = staffDoc.exists ? (staffDoc.data() as any).name || uid : uid;
+  
+  await db.collection("users").doc(customerUid).set({ 
+    blocked: false, 
+    blockedReason: null,
+    blockedUntil: null,
+    blockedBy: null,
+    unblockedBy: uid,
+    unblockedByName: staffName,
+    unblockedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true });
+  
   return { ok: true };
 });
 
@@ -987,4 +1044,256 @@ export const initializeGlobalChatRooms = functions.https.onCall(async (data, con
   }
   
   return { ok: true, message: `${rooms.length} salas criadas` };
+});
+
+// ═══════════════════════════════════════════════
+// DESBLOQUEIO AUTOMÁTICO DE CLIENTES
+// ═══════════════════════════════════════════════
+
+/**
+ * Desbloqueia automaticamente clientes cujo período de bloqueio expirou
+ * Executa a cada hora
+ */
+export const autoUnblockExpiredCustomers = functions.pubsub.schedule("every 1 hours").onRun(async () => {
+  const now = admin.firestore.Timestamp.now();
+  
+  // Buscar usuários bloqueados com bloqueio expirado
+  const expiredBlocks = await db.collection("users")
+    .where("blocked", "==", true)
+    .where("blockedUntil", "<=", now)
+    .get();
+  
+  const batch = db.batch();
+  let unblockedCount = 0;
+  
+  for (const doc of expiredBlocks.docs) {
+    const userData = doc.data();
+    
+    // Desbloquear
+    batch.update(doc.ref, {
+      blocked: false,
+      blockedReason: null,
+      blockedUntil: null,
+      blockedBy: null,
+      blockedByName: null,
+      blockedByShopId: null,
+      autoUnblocked: true,
+      autoUnblockedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    
+    unblockedCount++;
+    
+    // Notificar o cliente sobre o desbloqueio
+    await notifyUser(doc.id, "✅ Bloqueio finalizado", "Seu bloqueio foi removido. Você pode voltar a agendar!");
+  }
+  
+  await batch.commit();
+  console.log(`Auto-unblocked ${unblockedCount} customers`);
+  
+  return { ok: true, unblockedCount };
+});
+
+/**
+ * Verificar e limpar bloqueios expirados (chamada manual)
+ */
+export const checkExpiredBlocks = functions.https.onCall(async (data, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) throw new functions.https.HttpsError("unauthenticated", "Requer login");
+  
+  const now = admin.firestore.Timestamp.now();
+  
+  const expiredBlocks = await db.collection("users")
+    .where("blocked", "==", true)
+    .where("blockedUntil", "<=", now)
+    .get();
+  
+  const batch = db.batch();
+  
+  for (const doc of expiredBlocks.docs) {
+    batch.update(doc.ref, {
+      blocked: false,
+      blockedReason: null,
+      blockedUntil: null,
+      autoUnblocked: true,
+      autoUnblockedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  }
+  
+  await batch.commit();
+  
+  return { ok: true, count: expiredBlocks.size };
+});
+
+// ═══════════════════════════════════════════════
+// SISTEMA DE TRIAL 15 DIAS PARA DONOS
+// ═══════════════════════════════════════════════
+
+/**
+ * Iniciar trial de 15 dias para nova barbearia
+ * Chamado automaticamente ao criar uma nova barbearia
+ */
+export const startTrial = functions.https.onCall(async (data: any, context: functions.https.CallableContext) => {
+  const uid = context.auth?.uid;
+  if (!uid) throw new functions.https.HttpsError("unauthenticated", "Requer login");
+  
+  const { shopId } = data as { shopId: string };
+  if (!shopId) throw new functions.https.HttpsError("invalid-argument", "shopId é obrigatório");
+  
+  // Verificar se é o dono da barbearia
+  const shopDoc = await db.collection("barbershops").doc(shopId).get();
+  if (!shopDoc.exists) throw new functions.https.HttpsError("not-found", "Barbearia não encontrada");
+  
+  const shopData = shopDoc.data() as any;
+  if (shopData.ownerUid !== uid) {
+    throw new functions.https.HttpsError("permission-denied", "Apenas o dono pode iniciar o trial");
+  }
+  
+  // Verificar se já teve trial antes
+  if (shopData.trial?.used) {
+    throw new functions.https.HttpsError("failed-precondition", "Trial já foi utilizado");
+  }
+  
+  // Iniciar trial de 15 dias
+  const trialEnd = new Date();
+  trialEnd.setDate(trialEnd.getDate() + 15);
+  
+  await shopDoc.ref.update({
+    subscription: {
+      status: "trial",
+      trialEnd: admin.firestore.Timestamp.fromDate(trialEnd),
+      trialStart: admin.firestore.FieldValue.serverTimestamp(),
+    },
+    trial: {
+      used: true,
+      startedAt: admin.firestore.FieldValue.serverTimestamp(),
+      endsAt: admin.firestore.Timestamp.fromDate(trialEnd),
+    },
+  });
+  
+  return { 
+    ok: true, 
+    trialEnd: trialEnd.toISOString(),
+    message: "Trial de 15 dias iniciado!",
+  };
+});
+
+/**
+ * Verificar status do trial e expirar se necessário
+ * Executa diariamente
+ */
+export const checkExpiredTrials = functions.pubsub.schedule("0 0 * * *").onRun(async () => {
+  const now = admin.firestore.Timestamp.now();
+  
+  // Buscar barbearias em trial expirado
+  const expiredTrials = await db.collection("barbershops")
+    .where("subscription.status", "==", "trial")
+    .where("trial.endsAt", "<=", now)
+    .get();
+  
+  const batch = db.batch();
+  let expiredCount = 0;
+  
+  for (const doc of expiredTrials.docs) {
+    const shopData = doc.data();
+    
+    // Atualizar status para expirado
+    batch.update(doc.ref, {
+      subscription: {
+        status: "expired",
+        trialEnd: shopData.trial?.endsAt,
+        expiredAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+    });
+    
+    expiredCount++;
+    
+    // Notificar o dono
+    await notifyUser(
+      shopData.ownerUid,
+      "⚠️ Trial Expirado",
+      "Seu período de teste de 15 dias expirou. Assine para continuar usando o BarberPro!"
+    );
+  }
+  
+  await batch.commit();
+  console.log(`Expired ${expiredCount} trials`);
+  
+  return { ok: true, expiredCount };
+});
+
+/**
+ * Verificar se a barbearia tem acesso (ativo ou em trial)
+ */
+export const checkShopAccess = functions.https.onCall(async (data: any, context: functions.https.CallableContext) => {
+  const uid = context.auth?.uid;
+  if (!uid) throw new functions.https.HttpsError("unauthenticated", "Requer login");
+  
+  const { shopId } = data as { shopId: string };
+  if (!shopId) throw new functions.https.HttpsError("invalid-argument", "shopId é obrigatório");
+  
+  const shopDoc = await db.collection("barbershops").doc(shopId).get();
+  if (!shopDoc.exists) throw new functions.https.HttpsError("not-found", "Barbearia não encontrada");
+  
+  const shopData = shopDoc.data() as any;
+  const subscription = shopData.subscription;
+  
+  // Verificar status
+  let hasAccess = false;
+  let accessType = "none";
+  let daysRemaining = 0;
+  
+  if (subscription?.status === "active") {
+    hasAccess = true;
+    accessType = "subscription";
+  } else if (subscription?.status === "trial") {
+    const now = new Date();
+    const trialEnd = subscription.trialEnd?.toDate?.() || subscription.trial?.endsAt?.toDate?.();
+    if (trialEnd && trialEnd > now) {
+      hasAccess = true;
+      accessType = "trial";
+      daysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    }
+  }
+  
+  return {
+    hasAccess,
+    accessType,
+    daysRemaining,
+    subscriptionStatus: subscription?.status || "inactive",
+    trialEnd: subscription?.trialEnd?.toDate?.()?.toISOString() || null,
+  };
+});
+
+/**
+ * Aviso de trial expirando em 3 dias
+ * Executa diariamente
+ */
+export const trialExpiringWarning = functions.pubsub.schedule("0 12 * * *").onRun(async () => {
+  const now = new Date();
+  const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+  
+  // Buscar barbearias com trial expirando em 3 dias
+  const expiringTrials = await db.collection("barbershops")
+    .where("subscription.status", "==", "trial")
+    .get();
+  
+  for (const doc of expiringTrials.docs) {
+    const shopData = doc.data();
+    const trialEnd = shopData.trial?.endsAt?.toDate?.();
+    
+    if (!trialEnd) continue;
+    
+    const daysUntilExpiry = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Avisar se faltam 3, 2 ou 1 dia
+    if (daysUntilExpiry <= 3 && daysUntilExpiry > 0) {
+      await notifyUser(
+        shopData.ownerUid,
+        "⏰ Trial Expirando!",
+        `Seu trial expira em ${daysUntilExpiry} dia${daysUntilExpiry > 1 ? 's' : ''}. Assine agora para não perder acesso!`
+      );
+    }
+  }
+  
+  return { ok: true };
 });

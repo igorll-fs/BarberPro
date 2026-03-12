@@ -1,12 +1,12 @@
 /* ============================
    BARBERPRO — Login Screen
-   OTP WhatsApp + Email + Demo
+   OTP WhatsApp + Email + Demo + Reset Senha
    ============================ */
 import React from 'react';
-import { View, Text, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, Alert, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
 import { colors, spacing, fontSize, radius, globalStyles } from '../../theme';
 import { AppButton, AppInput, AppCard } from '../../components';
-import { startOtpWhatsApp, verifyOtpWhatsApp, signInOwnerEmail } from '../../services/auth';
+import { startOtpWhatsApp, verifyOtpWhatsApp, signInOwnerEmail, resetPassword } from '../../services/auth';
 import { getClaims } from '../../services/claims';
 import { useUser } from '../../store/user';
 import type { UserRole } from '../../types/models';
@@ -19,6 +19,9 @@ export default function LoginScreen() {
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [otpSent, setOtpSent] = React.useState(false);
+  const [showResetPassword, setShowResetPassword] = React.useState(false);
+  const [resetEmail, setResetEmail] = React.useState('');
+  const [resetSent, setResetSent] = React.useState(false);
   const setDemo = useUser((s) => s.setDemo);
 
   const requestOtp = async () => {
@@ -38,7 +41,7 @@ export default function LoginScreen() {
     if (!code.trim()) { Alert.alert('Erro', 'Digite o código'); return; }
     setLoading(true);
     try {
-      await verifyOtpWhatsApp(phone, code, role);
+      await verifyOtpWhatsApp(phone, code, role as 'cliente' | 'dono' | 'funcionario');
       // Auth listener no App.tsx irá redirecionar automaticamente
     } catch (e: any) {
       Alert.alert('Erro', e.message);
@@ -61,6 +64,18 @@ export default function LoginScreen() {
   const demoLogin = () => {
     setDemo(role, 'demo');
     // store.isAuthenticated se torna true → App redireciona
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetEmail.trim()) { Alert.alert('Erro', 'Digite seu email'); return; }
+    setLoading(true);
+    try {
+      await resetPassword(resetEmail);
+      setResetSent(true);
+    } catch (e: any) {
+      Alert.alert('Erro', e.message || 'Não foi possível enviar o email de reset');
+    }
+    setLoading(false);
   };
 
   const roles: { key: UserRole; label: string; icon: string }[] = [
@@ -136,7 +151,47 @@ export default function LoginScreen() {
             <AppInput label="E-mail" value={email} onChangeText={setEmail} placeholder="email@exemplo.com" autoCapitalize="none" keyboardType="email-address" />
             <AppInput label="Senha" value={password} onChangeText={setPassword} placeholder="••••••" secureTextEntry />
             <AppButton title="Entrar" onPress={ownerEmailLogin} loading={loading} icon="🔐" />
+            
+            {/* Link para reset de senha */}
+            <TouchableOpacity 
+              onPress={() => { setShowResetPassword(true); setResetEmail(email); }} 
+              style={{ marginTop: spacing.md, alignItems: 'center' }}
+            >
+              <Text style={{ color: colors.primary, fontSize: fontSize.sm }}>
+                Esqueceu sua senha? Clique aqui
+              </Text>
+            </TouchableOpacity>
           </AppCard>
+        )}
+
+        {/* Modal de Reset de Senha */}
+        {showResetPassword && (
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: spacing.lg }}>
+            <AppCard style={{ width: '100%' }}>
+              <Text style={{ color: colors.text, fontSize: fontSize.xl, fontWeight: '600', marginBottom: spacing.md }}>
+                🔐 Resetar Senha
+              </Text>
+              {resetSent ? (
+                <>
+                  <Text style={{ color: colors.textSecondary, fontSize: fontSize.md, marginBottom: spacing.lg, textAlign: 'center' }}>
+                    Email de reset enviado! Verifique sua caixa de entrada e spam.
+                  </Text>
+                  <AppButton title="Fechar" onPress={() => { setShowResetPassword(false); setResetSent(false); }} />
+                </>
+              ) : (
+                <>
+                  <Text style={{ color: colors.textMuted, fontSize: fontSize.sm, marginBottom: spacing.md }}>
+                    Digite seu email para receber o link de reset:
+                  </Text>
+                  <AppInput label="E-mail" value={resetEmail} onChangeText={setResetEmail} placeholder="email@exemplo.com" autoCapitalize="none" keyboardType="email-address" />
+                  <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                    <AppButton title="Cancelar" variant="outline" onPress={() => setShowResetPassword(false)} style={{ flex: 1 }} />
+                    <AppButton title="Enviar" onPress={handleResetPassword} loading={loading} style={{ flex: 1 }} />
+                  </View>
+                </>
+              )}
+            </AppCard>
+          </View>
         )}
 
         {role === 'funcionario' && (

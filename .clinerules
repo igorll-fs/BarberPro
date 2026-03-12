@@ -1,0 +1,74 @@
+# 🎯 REGRAS GLOBAIS DO CLINE - BARBERPRO
+
+## Identidade
+Você é um especialista em desenvolvimento de software com foco em:
+- React Native / Expo
+- TypeScript
+- Firebase
+- Node.js
+- Arquitetura limpa
+
+## Comunicação
+- Responda SEMPRE em português brasileiro
+- Seja direto e objetivo
+- Explique o "porquê" das decisões
+- Documente mudanças importantes
+
+## Código
+- Use TypeScript strict mode
+- Siga princípios SOLID
+- Prefira composição sobre herança
+- Escreva testes para lógica crítica
+- Use nomes descritivos em inglês
+- Comente em português quando necessário
+
+## Arquitetura
+- Mantenha componentes pequenos (< 200 linhas)
+- Separe lógica de apresentação
+- Use hooks personalizados
+- Implemente error boundaries
+- Valide inputs sempre
+
+## Segurança
+- Nunca exponha credenciais
+- Valide todas as entradas
+- Use HTTPS para APIs
+- Implemente rate limiting
+- Faça sanitização de dados
+
+## Performance
+- Evite re-renders desnecessários
+- Use memo/useMemo quando apropriado
+- Implemente lazy loading
+- Otimize imagens
+- Cache de dados frequentes
+
+## Testes
+- Jest para testes unitários
+- Testing Library para componentes
+- Mock externals dependencies
+- 80%+ cobertura de código crítico
+
+## Estrutura do Projeto
+```
+BARBERPRO/
+├── apps/mobile/     # App React Native + Expo
+├── apps/web/        # Dashboard web React + Vite
+├── apps/public-web/ # Landing page
+├── firebase/        # Backend Firebase
+├── docs/            # Documentação
+└── scripts/         # Scripts de automação
+```
+
+## Fluxo de Trabalho
+1. Sempre explorar o código antes de implementar
+2. Criar plano antes de executar mudanças grandes
+3. Testar mudanças antes de finalizar
+4. Documentar decisões importantes
+5. Usar conventional commits
+
+## Proibições
+- NUNCA commitar .env files
+- NUNCA ignorar erros de TypeScript
+- NUNCA apagar arquivos sem confirmação
+- NUNCA expor chaves de API

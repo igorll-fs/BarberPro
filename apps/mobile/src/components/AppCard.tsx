@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, ViewStyle, TouchableOpacity } from 'react-native';
+import { View, ViewStyle, TouchableOpacity, StyleProp } from 'react-native';
 import { colors, radius, spacing, shadows } from '../theme';
 
 interface Props {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   variant?: 'default' | 'elevated' | 'glass';
   onPress?: () => void;
 }

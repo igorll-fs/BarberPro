@@ -55,6 +55,12 @@ export type RootStackParamList = {
   InventoryManagement: undefined;
   StoriesManagement: undefined;
   LanguageSettings: undefined;
+  VersionManager: undefined;
+  DevMode: undefined;
+  DevPanel: undefined;
+  BarbershopProfile: undefined;
+  BarbershopPublic: { slug: string };
+  SearchBarbershops: undefined;
   RateAppointment: { shopId: string; appointmentId: string; serviceName?: string; staffName?: string };
   ReviewsList: { shopId: string };
   ServiceDetail: { shopId: string; serviceId: string };
