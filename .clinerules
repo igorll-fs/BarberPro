@@ -66,6 +66,38 @@ BARBERPRO/
 3. Testar mudanças antes de finalizar
 4. Documentar decisões importantes
 5. Usar conventional commits
+6. **Executar verificações pré-commit antes de commitar**
+
+## Git Hooks & Qualidade de Código
+
+### Pre-commit Hooks
+O projeto possui hooks automatizados que verificam:
+- ✅ Arquivos de backup (.backup, .old, .bak)
+- ✅ Chaves de API expostas
+- ✅ Arquivos .env acidentais
+- ✅ Console.logs esquecidos
+- ✅ Arquivos grandes (>10MB)
+
+### Configuração
+```bash
+# Configurar hooks (executar uma vez)
+node scripts/setup-git-hooks.js
+
+# Verificar se está configurado
+git config core.hooksPath  # Deve retornar: .githooks
+```
+
+### Comandos Úteis
+```bash
+# Pular hooks em emergências (use com cautela!)
+git commit --no-verify -m "mensagem"
+
+# Verificar manualmente
+node scripts/pre-commit-checks.js
+```
+
+### Documentação
+Veja `docs/GIT_HOOKS.md` para detalhes completos.
 
 ## Proibições
 - NUNCA commitar .env files

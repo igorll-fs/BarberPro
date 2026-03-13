@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+# Hook de pre-commit para o projeto BARBERPRO
+# Este script é executado automaticamente antes de cada commit
+#
+
+# Cores para output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+echo "${BLUE}🔍 Executando verificações pré-commit...${NC}"
+
+# Verifica se o Node.js está disponível
+if ! command -v node >/dev/null 2>&1; then
+    echo "${RED}❌ Node.js não encontrado. Instale o Node.js para usar os hooks.${NC}"
+    exit 1
+fi
+
+# Executa o script de verificações
+node scripts/pre-commit-checks.js
+
+# Captura o exit code
+RESULT=$?
+
+if [ $RESULT -ne 0 ]; then
+    echo "${RED}❌ Verificações pré-commit falharam!${NC}"
+    echo "${YELLOW}Corrija os erros acima antes de commitar.${NC}"
+    exit 1
+fi
+
+echo "${GREEN}✅ Todas as verificações passaram!${NC}"
+exit 0
